@@ -1,0 +1,19 @@
+{
+  "name": "ts-api-client-server",
+  "version": "0.0.1",
+  "description": "Define types on client and server libs at the same time",
+  "main": "dist/server.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/express": "^4.16.0",
+    "@types/webpack": "^4.4.19",
+    "io-ts": "^1.4.2",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.1",
+    "webpack": "^4.26.1"
+  },
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}

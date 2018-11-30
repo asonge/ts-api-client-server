@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "outDir": "./dist",
+    "experimentalDecorators": true,
+    "lib": ["es2015"]
+  },
+  "exclude": ["dist/"]
+}
