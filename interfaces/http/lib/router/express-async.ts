@@ -2,27 +2,30 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/lib/PathReporter';
 import { Handler, Request, Response, Router as ExpressRouter, RouterOptions, NextFunction, RequestHandler } from 'express';
 import * as TRouter from "./index"
-import { AnyRoute, Route, PT, QT, RT, BT } from "./index"
+import { AnyRoute, Route } from "./index"
 
-interface TypedRequest<P extends PT, Q extends QT, B extends BT> extends Request {
+// interface TypedRequest<P extends PT, Q extends QT, B extends BT> extends Request 
+
+interface TypedRequest<P,Q,B> extends Request {
   params: P
   query: Q
   body: B
 }
 
-interface TypedResponse<R extends RT> extends Response {
-  json(body?: t.TypeOf<R>): this
-}
-
-type TransformRequestHandler<RO> = RO extends Route<infer P, infer Q, infer B, infer R>
-  ? (req: TypedRequest<t.TypeOf<P>, t.TypeOf<Q>, t.TypeOf<B>>, res: TypedResponse<t.TypeOf<R>>, next: NextFunction) => void
+type AnyRequestHandler = (req: any) => Promise<any>
+type TransformRequestHandler<RO> = RO extends Route<infer P, infer Q, infer B, infer R> // Route<P,Q,B,R>
+  ? (req: TypedRequest<
+    t.OutputOf<P>,
+    t.OutputOf<Q>,
+    t.OutputOf<B>
+    >) => Promise<t.OutputOf<R>>
   : never;
 export type TransformedRoutes<T> = {
   [K in keyof T]: TransformRequestHandler<T[K]>
 }
 
 type AnyRoutes = {[index: string]: AnyRoute};
-type AnyRequestHandlers = {[index: string]: Handler};
+type AnyRequestHandlers = {[index: string]: AnyRequestHandler};
 
 export function reifyRouter<T>(router: TRouter.IRouter<T>, handlers: TransformedRoutes<T>, express_options: RouterOptions = {}): ExpressRouter {
   const routes = router.routes as unknown;
@@ -39,11 +42,26 @@ function installRoutes(
   Object.keys(handlers).forEach(name => {
     const route = routes[name];
     const handler = handlers[name];
-    erouter.use(route.path, middlewareFactory(route), handler);
+    erouter.use(route.path, middlewareFactory(route), asyncHandler(handler));
   })
 }
 
-function middlewareFactory(route: Route<any, any, any, any>): Handler {
+function asyncHandler(handler: AnyRequestHandler): Handler {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const response = await handler(req);
+      if (typeof response === undefined) {
+        res.status(204);
+      } else {
+        res.json(response);
+      }
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
+function middlewareFactory(route: AnyRoute): Handler {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = t.type({
       params: route.params,

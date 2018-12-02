@@ -2,11 +2,13 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "noImplicitReturns": true,
     "strict": true,
-    "strictNullChecks": true,
     "outDir": "./dist",
     "experimentalDecorators": true,
-    "lib": ["es2015"]
+    "lib": ["es2015","esnext"],
+    "declaration": true,
+    "declarationDir": "./declaration",
   },
   "exclude": ["dist/"]
 }

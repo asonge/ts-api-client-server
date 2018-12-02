@@ -1,28 +1,14 @@
 import * as t from 'io-ts';
-import * as express from 'express';
-// import Axios, * as 'axios';
 
 export type Verb = 'get' | 'put' | 'post' | 'delete';
 
-// export type PT = t.AnyDictionaryType;
-// export type QT = t.AnyDictionaryType;
-// export type BT = t.AnyDictionaryType | t.AnyArrayType | t.UndefinedType;
-// export type RT = t.AnyDictionaryType | t.AnyArrayType | t.UndefinedType;
-// type BodyType = t.Type<any, any, any>
-export type PT = t.Any // t.Type<{}, {}, {}>;
-export type QT = t.Any // t.Type<{}, {}, {}>;
-export type BT = t.Any // BodyType;
-export type RT = t.Any // BodyType;
+export type PT = t.Any
+export type QT = t.Any
+export type BT = t.Any
+export type RT = t.Any
 
-
-
-export interface Route<P extends PT, Q extends QT, B extends BT, R extends RT> {
-  readonly verb: Verb
-  readonly path: string
-  readonly params: P
-  readonly query: Q
-  readonly body: B
-  readonly resp: R
+export class Route<P extends PT, Q extends QT, B extends BT, R extends RT> {
+  constructor(public verb: Verb, public path: string, public params: P, public query: Q, public body: B, public resp: R){}
 }
 
 interface RequestDetails<P extends PT, Q extends QT, B extends BT> {
@@ -32,53 +18,72 @@ interface RequestDetails<P extends PT, Q extends QT, B extends BT> {
 }
 type PartialRequestDetails<P extends PT, Q extends QT, B extends BT> = Partial<RequestDetails<P,Q,B>>;
 
-interface RouterOptions {
-  prefix?: string
-}
-
-function undefOr<T>(value: T | undefined, other: T): T {
-  if(typeof value === 'undefined') {
-    return other;
-  } else {
-    return value;
-  }
-}
-
-const defaultDetails = <RequestDetails<t.InterfaceType<{}>,t.InterfaceType<{}>,t.UndefinedType>>{
-  params: t.type({}),
-  query: t.type({}),
+const defaultProps = t.exact(t.type({}));
+const defaultDetails = {
+  params: defaultProps,
+  query: defaultProps,
   body: t.undefined
 }
 
-function mergeDetails<P extends PT,Q extends QT,B extends BT>
-(details: PartialRequestDetails<P,Q,B>): RequestDetails<P,Q,B> {
-  return {...defaultDetails, ...details} as RequestDetails<P,Q,B>;
+export type AnyRoute = Route<any,any,any,any>;
+export type Routes = { [index: string]: AnyRoute }
+
+export interface IRouter<T> {
+  readonly prefix: string,
+  routes: T
 }
 
-export default class Router {
-  public readonly prefix?: string;
+export default {
 
-  static route<P extends PT, Q extends QT, B extends BT, R extends RT>(verb: Verb, path: string, resp: R, details: PartialRequestDetails<P, Q, B>): Route<P, Q, B, R> {
-    const {params, query, body} = mergeDetails(details);
-    return { verb, path, params, query, body, resp };
-  }
+  createRouter<T>(prefix: string, routes: T): IRouter<T> {
+    return {
+      prefix,
+      routes
+    }
+  },
 
-  static get<P extends PT, Q extends QT, B extends BT, R extends RT>
+  route<P extends PT, Q extends QT, B extends BT, R extends RT>(verb: Verb, path: string, resp: R, details: PartialRequestDetails<P, Q, B>): Route<P, Q, B, R> {
+    const {params, query, body} = Object.assign({}, defaultDetails, details);
+    return new Route(verb, path, params, query, body, resp);
+  },
+
+  
+  get<
+  R extends RT,
+  P extends PT = typeof defaultDetails.params,
+  Q extends QT = typeof defaultDetails.query,
+  B extends BT = typeof defaultDetails.body
+  >
   (path: string, resp: R, details: PartialRequestDetails<P, Q, B>): Route<P, Q, B, R> {
     return this.route('get', path, resp, details);
-  }
+  },
 
-  static post<P extends PT, Q extends QT, B extends BT, R extends RT>
+  post<
+  R extends RT,
+  P extends PT = typeof defaultDetails.params,
+  Q extends QT = typeof defaultDetails.query,
+  B extends BT = typeof defaultDetails.body
+  >
   (path: string, resp: R, details: PartialRequestDetails<P, Q, B>): Route<P, Q, B, R> {
     return this.route('post', path, resp, details);
-  }
+  },
 
-  static put<P extends PT, Q extends QT, B extends BT, R extends RT>
+  put<
+  R extends RT,
+  P extends PT = typeof defaultDetails.params,
+  Q extends QT = typeof defaultDetails.query,
+  B extends BT = typeof defaultDetails.body,
+  >
   (path: string, resp: R, details: PartialRequestDetails<P, Q, B>): Route<P, Q, B, R> {
     return this.route('put', path, resp, details);
-  }
+  },
 
-  static delete<P extends PT, Q extends QT, B extends BT, R extends RT>
+  delete<
+  R extends RT,
+  P extends PT = typeof defaultDetails.params,
+  Q extends QT = typeof defaultDetails.query,
+  B extends BT = typeof defaultDetails.body,
+  >
   (path: string, resp: R, details: PartialRequestDetails<P, Q, B>): Route<P, Q, B, R> {
     return this.route('delete', path, resp, details);
   }

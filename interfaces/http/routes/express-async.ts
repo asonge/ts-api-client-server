@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
-import {UserRouter, ExistingUser, User} from './routes';
+import {UserRouter, ExistingUser} from './routes';
 import {ThrowReporter} from 'io-ts/lib/ThrowReporter';
-import {reifyRouter, TransformedRoutes} from '../lib/router/express';
+import {reifyRouter, TransformedRoutes} from '../lib/router/express-async';
 
 async function decodePromise<T extends t.Any>(type: T, input: t.InputOf<T>): Promise<t.TypeOf<T>> {
   const result = type.decode(input);
@@ -14,28 +14,28 @@ async function decodePromise<T extends t.Any>(type: T, input: t.InputOf<T>): Pro
 }
 
 reifyRouter(UserRouter, <TransformedRoutes<typeof UserRouter.routes>>{
-  getUser(req, res) {
-    res.json({
+  async getUser(req) {
+    return {
       id: req.params.id,
       name: 'Test User',
       phone: '5'
-    })
+    }
   },
-  createUser(req, res) {
-    res.json({
+  async createUser(req) {
+    return {
       id: Math.random(),
       name: 'Test User',
       phone: '5'
-    })
+    }
   },
-  updateUser(req, res) {
-    res.json(decodePromise(ExistingUser, {
+  async updateUser(req) {
+    return decodePromise(ExistingUser, {
       id: req.params.id,
       name: req.body.name,
       phone: req.body.phone
-    }));
+    });
   },
-  deleteUser() {
+  async deleteUser(req) {
     return undefined;
   }
 });
