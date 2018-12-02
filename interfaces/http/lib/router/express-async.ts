@@ -4,8 +4,6 @@ import { Handler, Request, Response, Router as ExpressRouter, RouterOptions, Nex
 import * as TRouter from "./index"
 import { AnyRoute, Route } from "./index"
 
-// interface TypedRequest<P extends PT, Q extends QT, B extends BT> extends Request 
-
 interface TypedRequest<P,Q,B> extends Request {
   params: P
   query: Q
@@ -13,7 +11,7 @@ interface TypedRequest<P,Q,B> extends Request {
 }
 
 type AnyRequestHandler = (req: any) => Promise<any>
-type TransformRequestHandler<RO> = RO extends Route<infer P, infer Q, infer B, infer R> // Route<P,Q,B,R>
+type TransformRequestHandler<RO> = RO extends Route<infer P, infer Q, infer B, infer R>
   ? (req: TypedRequest<
     t.OutputOf<P>,
     t.OutputOf<Q>,
