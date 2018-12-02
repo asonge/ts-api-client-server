@@ -28,8 +28,8 @@ reifyRouter(UserRouter, <TransformedRoutes<typeof UserRouter.routes>>{
       phone: '5'
     })
   },
-  updateUser(req, res) {
-    res.json(decodePromise(ExistingUser, {
+  async updateUser(req, res) {
+    res.json(await decodePromise(ExistingUser, {
       id: req.params.id,
       name: req.body.name,
       phone: req.body.phone
