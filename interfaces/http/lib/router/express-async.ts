@@ -16,7 +16,7 @@ type TransformRequestHandler<RO> = RO extends Route<infer P, infer Q, infer B, i
     t.OutputOf<P>,
     t.OutputOf<Q>,
     t.OutputOf<B>
-    >) => Promise<t.OutputOf<R>>
+    >) => Promise<t.TypeOf<R>>
   : never;
 export type TransformedRoutes<T> = {
   [K in keyof T]: TransformRequestHandler<T[K]>

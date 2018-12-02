@@ -10,8 +10,8 @@ interface TypedRequest<P extends PT, Q extends QT, B extends BT> extends Request
   body: B
 }
 
-interface TypedResponse<R extends RT> extends Response {
-  json(body?: t.TypeOf<R>): this
+interface TypedResponse<R> extends Response {
+  json(body?: R): this
 }
 
 type TransformRequestHandler<RO> = RO extends Route<infer P, infer Q, infer B, infer R>

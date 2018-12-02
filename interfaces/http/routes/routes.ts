@@ -5,12 +5,12 @@ export const User = t.type({
   name: t.string,
   phone: t.string
 })
-export const ExistingUser = t.type({
-  id: t.number,
-  name: t.string,
-  phone: t.string
-})
-// export const ExistingUser = t.exact(t.intersection([t.type({id: t.number}), User]))
+// export const ExistingUser = t.type({
+//   id: t.number,
+//   name: t.string,
+//   phone: t.string
+// })
+export const ExistingUser = t.exact(t.intersection([t.type({id: t.number}), User]))
 export const PartialUser = t.exact(t.partial(User.props));
 
 const p = {
